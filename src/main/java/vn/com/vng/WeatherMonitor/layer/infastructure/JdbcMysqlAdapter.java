@@ -33,8 +33,8 @@ public class JdbcMysqlAdapter {
         dataSource.setUsername(settings.MYSQL_USER);
         dataSource.setPassword(settings.MYSQL_PASS);
         dataSource.setUrl(connectionString);
-        dataSource.setInitialSize(0);
-        dataSource.setMaxTotal(10);
+        dataSource.setInitialSize(settings.MYSQL_POOL_SIZE);
+        dataSource.setMaxTotal(settings.MYSQL_POOL_SIZE);
 
         dataSource.setTestOnBorrow(true);
         dataSource.setTestWhileIdle(true);

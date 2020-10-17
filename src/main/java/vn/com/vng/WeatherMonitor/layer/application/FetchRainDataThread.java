@@ -2,7 +2,6 @@ package vn.com.vng.WeatherMonitor.layer.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import vn.com.vng.WeatherMonitor.layer.application.dao.CheckPointDao;
 import vn.com.vng.WeatherMonitor.layer.application.dao.RainViewerDao;
@@ -35,7 +34,7 @@ public class FetchRainDataThread extends Thread{
     RegionDao regionDao;
 
     @Autowired
-    ThreadPoolTaskExecutor executor;
+    ExecutorService executor;
 
     @Autowired
     RecordDao recordDao;
@@ -72,14 +71,14 @@ public class FetchRainDataThread extends Thread{
                 System.out.println("Find new checkpoints");
                 Long newestCheckpoint = rainViewerDao.getNewCheckPoint();
 
-                int step = (int) ((newestCheckpoint - lastCheckPoint.getTimestamp()) / TimeUnit.HOURS.toSeconds(1));
+                int step = (int) ((newestCheckpoint - lastCheckPoint.getTimestamp()) / TimeUnit.MINUTES.toSeconds(30));
                 if(step > 0) {
                     List<Region> regionList = regionDao.listRegions();
                     if(regionList == null || regionList.size() == 0) {
                         return;
                     }
                     for(int i=1; i <= step; i++) {
-                        CheckPoint newCheckpoint = new CheckPoint(lastCheckPoint.getTimestamp() + TimeUnit.HOURS.toSeconds(i));
+                        CheckPoint newCheckpoint = new CheckPoint(lastCheckPoint.getTimestamp() + TimeUnit.MINUTES.toSeconds(i*30));
                         newCheckpoint.setId(checkPointDao.insert(newCheckpoint));
                         for(Region region: regionList) {
                             executor.submit(() -> {
@@ -98,7 +97,7 @@ public class FetchRainDataThread extends Thread{
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }, 0,1, TimeUnit.HOURS);
+        }, 0,10, TimeUnit.MINUTES);
     }
     public void run() {
         AtomicBoolean isAvailable = new AtomicBoolean(true);
@@ -109,26 +108,34 @@ public class FetchRainDataThread extends Thread{
                 System.out.println("Fetching record to process");
                 List<Record> recordList = recordDao.listUnProcessedRecords();
                 if(recordList == null || recordList.size() == 0) {
-                    Thread.sleep(100000l);
+                    Thread.sleep(TimeUnit.MINUTES.toMillis(10));
                     continue;
                 }
 
                 for(Record record : recordList) {
-                   if(record.getData() != null) {
-                       return;
+                   if(record.getScore() != null) {
+                       continue;
                    }
                    executor.submit(() -> {
                        try {
                            RainViewerParam param = new RainViewerParam(record.getRegion(),record.getCheckPoint().getTimestamp());
                            byte[] data = rainViewerDao.getSnapshot(param);
-                           record.setData(data);
+                           //pre calculate
+                           long score = 0;
+                           if(data!= null) {
+                               for(byte i : data) {
+                                   score += (i & 0xFF);
+                               }
+                           }
+//                           record.setData(data);
+                           record.setScore(score);
                            recordDao.insert(record);
                        }catch (Exception e) {
                            e.printStackTrace();
                        }
                    });
                 }
-                Thread.sleep(100000L);
+                Thread.sleep(TimeUnit.MINUTES.toMillis(10));
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

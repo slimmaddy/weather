@@ -1,5 +1,6 @@
 package vn.com.vng.WeatherMonitor.layer.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,7 +10,6 @@ import vn.com.vng.WeatherMonitor.layer.application.entity.Area;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Record;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
 import vn.com.vng.WeatherMonitor.layer.application.model.InvalidDataException;
-import vn.com.vng.WeatherMonitor.layer.application.model.QueryFilter;
 import vn.com.vng.WeatherMonitor.layer.application.model.QuerySearch;
 import vn.com.vng.WeatherMonitor.layer.application.model.RecordRespondPayload;
 import vn.com.vng.WeatherMonitor.layer.application.validator.QuerySearchValidator;
@@ -18,6 +18,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +32,10 @@ public class RecordService {
     @Autowired
     RegionDao regionDao;
 
-    public List<RecordRespondPayload> listRecord(QuerySearch filter) throws InvalidDataException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    @Autowired
+    ExecutorService executor;
+
+    public List<RecordRespondPayload> listRecord(QuerySearch filter) throws InvalidDataException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InterruptedException, ExecutionException, JsonProcessingException {
         QuerySearchValidator.validate(filter);
         //region
         if(filter.getRegionCode() != null) {
@@ -49,31 +56,33 @@ public class RecordService {
 
         List<Record> recordList = new ArrayList<>();
         List<Region> listRegions = regionDao.getAllRegionsByArea(area.getId());
+        List<Callable<List<Record>>> jobList = new ArrayList<>();
         for(Region region : listRegions) {
-            QuerySearch subFilter = new QuerySearch();
-            PropertyUtils.copyProperties(subFilter, filter);
-            subFilter.setRegion(region);
-            recordList.addAll(recordDao.listRecordByFilter(subFilter));
+            jobList.add(() -> {
+                try {
+                    QuerySearch subFilter = new QuerySearch();
+                    PropertyUtils.copyProperties(subFilter, filter);
+                    subFilter.setRegion(region);
+                    List<Record> records = recordDao.listRecordByFilter(subFilter);
+                    return records;
+                } catch (Exception e){
+                    e.printStackTrace();
+                    return new ArrayList<>();
+                }
+
+            });
         }
-//        Region region = new Region();
-//        region.setArea(area);
-//        filter.setRegion(region);
-//        List<Record> listRecord = recordDao.listRecordByFilter(filter);
+        List<Future<List<Record>>> futures = executor.invokeAll(jobList);
+        for(Future<List<Record>> f : futures) {
+            recordList.addAll(f.get());
+        }
 
         Map<Long, List<Record>> recordPerCheckPoint = recordList.stream().collect(Collectors.groupingBy(record -> record.getCheckPoint().getTimestamp()));
 
         return recordPerCheckPoint.entrySet().stream().map(entry -> {
             RecordRespondPayload recordRespondPayload = new RecordRespondPayload();
             List<Record> records = entry.getValue();
-            long score = records.stream().mapToLong(record -> {
-                long localScore = 0;
-                if (record.getData() != null) {
-                    for (byte i : record.getData()) {
-                        localScore += (i & 0xFF);
-                    }
-                }
-                return localScore;
-            }).reduce(0, (a, b) -> a + b);
+            long score = records.stream().mapToLong(r -> r.getScore()).reduce(0, (a, b) -> a + b);
             recordRespondPayload.setScore(score);
             recordRespondPayload.setRegionCode(area.getCode());
             recordRespondPayload.setTimestamp(entry.getKey());

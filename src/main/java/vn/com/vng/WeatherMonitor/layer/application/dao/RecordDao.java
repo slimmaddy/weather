@@ -11,11 +11,8 @@ import vn.com.vng.WeatherMonitor.layer.application.entity.Record;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
 import vn.com.vng.WeatherMonitor.layer.application.model.QueryFilter;
 import vn.com.vng.WeatherMonitor.layer.application.model.RecordRowMapper;
-import vn.com.vng.WeatherMonitor.layer.application.model.RegionRowMapper;
 
-import java.io.ByteArrayInputStream;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +31,7 @@ public class RecordDao {
         int maxRetry = 3;
         while (maxRetry-- > 0) {
             try {
-                if(record.getData() == null) {
+                if(record.getScore() == null) {
                     String sql = String.format(
                             "INSERT INTO %s (region_id, checkpoint_id) VALUES (?, ?)", recordTable);
 
@@ -46,18 +43,17 @@ public class RecordDao {
                     });
                     return;
                 } else {
-                    try(ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(record.getData())) {
-                        String sql = String.format(
-                                "REPLACE INTO %s (region_id, checkpoint_id, data) VALUES (?, ?, ?)", recordTable);
+                    String sql = String.format(
+                            "REPLACE INTO %s (region_id, checkpoint_id, score) VALUES (?, ?, ?)", recordTable);
 
-                        mysqlTemplate.update(connection -> {
-                            PreparedStatement ps = connection.prepareStatement(sql);
-                            ps.setInt(1, record.getRegion().getId());
-                            ps.setInt(2, record.getCheckPoint().getId());
-                            ps.setBlob(3, byteArrayInputStream);
-                            return ps;
-                        });
-                    }
+                    mysqlTemplate.update(connection -> {
+                        PreparedStatement ps = connection.prepareStatement(sql);
+                        ps.setInt(1, record.getRegion().getId());
+                        ps.setInt(2, record.getCheckPoint().getId());
+                        ps.setLong(3, record.getScore());
+                        return ps;
+                    });
+
                     return;
                 }
             } catch (DeadlockLoserDataAccessException e) {
@@ -66,14 +62,13 @@ public class RecordDao {
                 }
             }
         }
-        throw new Exception("Out of retry times when inserting token");
+        throw new Exception("Out of retry times when inserting record");
     }
 
     public List<Record> listRecords() {
         String sql = String.format("SELECT * FROM %s as record_tbl " +
                 "Inner join %s as region_tbl on record_tbl.region_id = region_tbl.id " +
                 "Inner join %s as checkpoint_tbl on record_tbl.checkpoint_id = checkpoint_tbl.id", recordTable, regionTable, checkpointTable);
-        System.out.println(sql);
         return mysqlTemplate.query(sql, new RecordRowMapper());
     }
 
@@ -81,7 +76,16 @@ public class RecordDao {
         String sql = String.format("SELECT * FROM %s as record_tbl " +
                 "Inner join %s as region_tbl on record_tbl.region_id = region_tbl.id " +
                 "Inner join %s as checkpoint_tbl on record_tbl.checkpoint_id = checkpoint_tbl.id " +
-                "where data is null", recordTable, regionTable, checkpointTable);
+                "where score is null", recordTable, regionTable, checkpointTable);
+        List<Record> list = mysqlTemplate.query(sql, new RecordRowMapper());
+        return list;
+    }
+
+    public List<Record> listProcessedRecords() {
+        String sql = String.format("SELECT * FROM %s as record_tbl " +
+                "Inner join %s as region_tbl on record_tbl.region_id = region_tbl.id " +
+                "Inner join %s as checkpoint_tbl on record_tbl.checkpoint_id = checkpoint_tbl.id " +
+                "where data is not null", recordTable, regionTable, checkpointTable);
         List<Record> list = mysqlTemplate.query(sql, new RecordRowMapper());
         return list;
     }
@@ -117,7 +121,9 @@ public class RecordDao {
                 "Inner join %s as checkpoint_tbl on record_tbl.checkpoint_id = checkpoint_tbl.id " +
                 "where record_tbl.region_id = ? " +
                 "and checkpoint_tbl.timestamp >= ? " +
-                "and checkpoint_tbl.timestamp <= ?", recordTable, regionTable, checkpointTable);
+                "and checkpoint_tbl.timestamp <= ? " +
+                "and mod(checkpoint_tbl.timestamp,3600)=0 " +
+                "and score is not null", recordTable, regionTable, checkpointTable);
         List<Object> params = new ArrayList<>();
         params.add(filter.getRegion().getId());
         params.add(filter.getFromDate());

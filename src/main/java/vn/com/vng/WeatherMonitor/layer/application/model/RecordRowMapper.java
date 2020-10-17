@@ -29,9 +29,14 @@ public class RecordRowMapper implements RowMapper<Record> {
         checkPoint.setId(rs.getInt("checkpoint_id"));
         checkPoint.setTimestamp(rs.getLong("timestamp"));
 
-        if(rs.getBlob("data") != null) {
-            Blob blob = rs.getBlob("data");
-            record.setData(blob.getBytes(1L, (int) blob.length()));
+//        if(rs.getBlob("data") != null) {
+//            Blob blob = rs.getBlob("data");
+//            record.setData(blob.getBytes(1L, (int) blob.length()));
+//        }
+        if(rs.getObject("score") != null) {
+            record.setScore(rs.getLong("score"));
+        } else {
+            record.setScore(null);
         }
 
         record.setRegion(region);

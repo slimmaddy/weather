@@ -15,6 +15,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import vn.com.vng.WeatherMonitor.layer.infastructure.JdbcMysqlAdapter;
 
 import javax.sql.DataSource;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Configuration
 @EnableAsync
@@ -45,13 +47,8 @@ public class MyCustomApplicationConfig implements WebServerFactoryCustomizer<Tom
     }
 
     @Bean
-    public ThreadPoolTaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(10);
-        executor.setThreadNamePrefix("common-pool::");
-        executor.initialize();
-        return executor;
+    public ExecutorService taskExecutor() {
+        return Executors.newFixedThreadPool(settings.THREAD_POOL_SIZE);
     }
 
     @Bean(name = "mysqlDatasource", destroyMethod = "")

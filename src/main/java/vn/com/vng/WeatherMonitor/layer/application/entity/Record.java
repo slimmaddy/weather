@@ -5,7 +5,9 @@ public class Record {
 
     private CheckPoint checkPoint;
 
-    private byte[] data;
+//    private byte[] data;
+
+    private Long score;
 
     public Record() {
     }
@@ -26,11 +28,19 @@ public class Record {
         this.checkPoint = checkPoint;
     }
 
-    public byte[] getData() {
-        return data;
+//    public byte[] getData() {
+//        return data;
+//    }
+//
+//    public void setData(byte[] data) {
+//        this.data = data;
+//    }
+
+    public Long getScore() {
+        return score;
     }
 
-    public void setData(byte[] data) {
-        this.data = data;
+    public void setScore(Long score) {
+        this.score = score;
     }
 }

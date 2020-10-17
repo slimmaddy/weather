@@ -29,6 +29,10 @@ public class Settings {
     public String MYSQL_DB = "weather";
     public String MYSQL_USER = "root";
     public String MYSQL_PASS = "root";
+    public int MYSQL_POOL_SIZE = 3;
+    public int THREAD_POOL_SIZE = 5;
+
+
 
     public static Settings getInstance() {
         Settings result = instance;
