@@ -23,15 +23,9 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import vn.com.vng.WeatherMonitor.config.Settings;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.time.Duration;
 import java.util.Calendar;
 import java.util.Collection;
@@ -78,17 +72,17 @@ public class Util {
         return new JSONObject(jsonString);
     }
 
-    public static ResponseEntity<String> formatResponse(HttpStatus statusCode, Object result, int status,
+    public static String formatResponse(int statusCode, Object result, int status,
                                                         String message) {
         try {
             JSONObject response = new JSONObject();
-            response.put("code", statusCode.value());
+            response.put("code", statusCode);
             response.put("result", formatResult(result));
 
             response.put("status", status);
             response.put("message", message);
 
-            return ResponseEntity.status(statusCode).body(response.toString());
+            return response.toString();
         } catch (Throwable e) {
             e.printStackTrace();
 
@@ -97,15 +91,15 @@ public class Util {
             response.put("status", status);
             response.put("message", e.getMessage());
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response.toString());
+            return response.toString();
         }
     }
 
-    public static ResponseEntity<String> formatResponse(HttpStatus statusCode, Collection<?> result, int status,
+    public static String formatResponse(int statusCode, Collection<?> result, int status,
                                                         String message) {
         try {
             JSONObject response = new JSONObject();
-            response.put("code", statusCode.value());
+            response.put("code", statusCode);
             if (result != null) {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.setSerializationInclusion(Include.NON_NULL);
@@ -116,7 +110,7 @@ public class Util {
             response.put("status", status);
             response.put("message", message);
 
-            return ResponseEntity.status(statusCode).body(response.toString());
+            return response.toString();
         } catch (Throwable e) {
             e.printStackTrace();
             JSONObject response = new JSONObject();
@@ -124,33 +118,7 @@ public class Util {
             response.put("status", status);
             response.put("message", e.getMessage());
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response.toString());
-        }
-    }
-    public static ResponseEntity<InputStreamResource> formatResourceResponse(HttpStatus statusCode, Object result, int status,
-                                                                     String message) {
-        try {
-            JSONObject response = new JSONObject();
-            response.put("code", statusCode.value());
-            if (result != null) {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.setSerializationInclusion(Include.NON_NULL);
-                String jsonString = mapper.writeValueAsString(result);
-                response.put("result", new JSONArray(jsonString));
-            }
-
-            response.put("status", status);
-            response.put("message", message);
-
-            return ResponseEntity.status(statusCode).body(new InputStreamResource(new ByteArrayInputStream(response.toString().getBytes())));
-        } catch (Throwable e) {
-            e.printStackTrace();
-            JSONObject response = new JSONObject();
-            response.put("code", statusCode);
-            response.put("status", status);
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new InputStreamResource(new ByteArrayInputStream(response.toString().getBytes())));
+            return response.toString();
         }
     }
 
@@ -183,8 +151,8 @@ public class Util {
 
     public static PoolingHttpClientConnectionManager createHttpConnManager() {
         PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
-        connManager.setMaxTotal(10);
-        connManager.setDefaultMaxPerRoute(10);
+        connManager.setMaxTotal(2);
+        connManager.setDefaultMaxPerRoute(2);
 
         return connManager;
     }

@@ -36,7 +36,7 @@ public class RainViewerDao {
     private HttpRequestRetryHandler retryHandler = Util.createRequestRetryHandler(RETRY);
     private HttpRoutePlanner routePlanner = Util.createRoutePlanner();
     private ServiceUnavailableRetryStrategy retryStrategy = Util.createServiceUnavailableRetryStrategy(RETRY,TIMEWAIT);
-    private CloseableHttpClient httpClient = HttpClients.custom().setKeepAliveStrategy(strategy)
+    private CloseableHttpClient httpClient = HttpClients.custom().setKeepAliveStrategy(strategy).setConnectionManager(connManager)
             .setDefaultRequestConfig(config).setRetryHandler(retryHandler)
             .setServiceUnavailableRetryStrategy(retryStrategy).setRoutePlanner(routePlanner).build();
 

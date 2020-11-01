@@ -1,8 +1,7 @@
 package vn.com.vng.WeatherMonitor.layer.application.web.sparkAPI;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import spark.Request;
 import spark.RouteGroup;
@@ -32,17 +31,13 @@ public class RegionController implements RouteGroup {
                 throw new InvalidDataException("header[token] is invalid");
             }
             List<RegionResponsePayload> result = regionService.listRegion();
-            ResponseEntity<String> response = Util.formatResponse(HttpStatus.OK, result, 1, "List comments by media successfully!");
-            res.body(response.getBody());
-            res.status(response.getStatusCodeValue());
+            return Util.formatResponse(HttpStatus.SC_OK, result, 1, "List comments by media successfully!");
+
         } catch (Throwable e) {
             String message = "An error has occurred when listing regions";
             e.printStackTrace();
-            ResponseEntity<String> response = Util.formatResponse(HttpStatus.INTERNAL_SERVER_ERROR, message, 0, message);
-            res.body(response.getBody());
-            res.status(response.getStatusCodeValue());
+            return Util.formatResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, message, 0, message);
         }
-        return null;
     }
     @Override
     public void addRoutes() {
