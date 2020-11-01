@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import vn.com.vng.WeatherMonitor.layer.application.dao.RegionDao;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Area;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
-import vn.com.vng.WeatherMonitor.layer.application.model.InvalidDataException;
 import vn.com.vng.WeatherMonitor.layer.application.model.RegionResponsePayload;
 import vn.com.vng.WeatherMonitor.layer.application.validator.RegionValidator;
 

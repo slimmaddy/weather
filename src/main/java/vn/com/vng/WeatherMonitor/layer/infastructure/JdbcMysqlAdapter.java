@@ -2,8 +2,8 @@ package vn.com.vng.WeatherMonitor.layer.infastructure;
 
 import com.mysql.jdbc.Driver;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 import vn.com.vng.WeatherMonitor.config.Settings;
 
 import javax.sql.DataSource;
@@ -64,7 +64,6 @@ public class JdbcMysqlAdapter {
         this.dataSource = dataSource;
     }
 
-    @Bean(name = "mysqlKingHubJdbcReadTemplate")
     public JdbcTemplate getJdbcTemplate() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.setResultsMapCaseInsensitive(false);

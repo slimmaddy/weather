@@ -1,7 +1,5 @@
 package vn.com.vng.WeatherMonitor.layer.application.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.tomcat.util.net.jsse.JSSEUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DeadlockLoserDataAccessException;
@@ -13,7 +11,6 @@ import vn.com.vng.WeatherMonitor.layer.application.entity.Area;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
 import vn.com.vng.WeatherMonitor.layer.application.model.AreaRowMapper;
 import vn.com.vng.WeatherMonitor.layer.application.model.RegionRowMapper;
-import vn.com.vng.WeatherMonitor.ultility.Util;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;

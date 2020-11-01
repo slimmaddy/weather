@@ -1,6 +1,5 @@
 package vn.com.vng.WeatherMonitor.layer.application;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import vn.com.vng.WeatherMonitor.layer.application.dao.CheckPointDao;
