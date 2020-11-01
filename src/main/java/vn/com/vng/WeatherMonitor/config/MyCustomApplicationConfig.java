@@ -1,15 +1,16 @@
 package vn.com.vng.WeatherMonitor.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.web.context.request.RequestContextListener;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import vn.com.vng.WeatherMonitor.layer.infastructure.JdbcMysqlAdapter;
@@ -39,6 +40,18 @@ public class MyCustomApplicationConfig implements WebServerFactoryCustomizer<Tom
     public void customize(TomcatServletWebServerFactory factory) {
         factory.setContextPath(settings.PREFIX_PATH);
         factory.setPort(settings.PORT);
+    }
+
+    @Override
+    public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
+        assert configurer != null;
+        configurer.setTaskExecutor(mvcTaskExecutor());
+        configurer.setDefaultTimeout(60000);
+    }
+
+    @Bean
+    public AsyncTaskExecutor mvcTaskExecutor() {
+        return new ConcurrentTaskExecutor(Executors.newCachedThreadPool());
     }
 
     @Bean

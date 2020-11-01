@@ -15,7 +15,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.springframework.stereotype.Component;
-import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
 import vn.com.vng.WeatherMonitor.layer.application.model.InvalidDataException;
 import vn.com.vng.WeatherMonitor.layer.application.model.RainViewerParam;
 import vn.com.vng.WeatherMonitor.ultility.Util;
@@ -38,7 +37,7 @@ public class RainViewerDao {
     private HttpRoutePlanner routePlanner = Util.createRoutePlanner();
     private ServiceUnavailableRetryStrategy retryStrategy = Util.createServiceUnavailableRetryStrategy(RETRY,TIMEWAIT);
     private CloseableHttpClient httpClient = HttpClients.custom().setKeepAliveStrategy(strategy)
-            .setConnectionManager(connManager).setDefaultRequestConfig(config).setRetryHandler(retryHandler)
+            .setDefaultRequestConfig(config).setRetryHandler(retryHandler)
             .setServiceUnavailableRetryStrategy(retryStrategy).setRoutePlanner(routePlanner).build();
 
     private static final String rootPath = "https://tilecache.rainviewer.com/v2/radar/";

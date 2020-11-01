@@ -10,11 +10,8 @@ import org.springframework.stereotype.Component;
 import vn.com.vng.WeatherMonitor.layer.application.entity.CheckPoint;
 import vn.com.vng.WeatherMonitor.layer.application.model.CheckPointRowMapper;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Component

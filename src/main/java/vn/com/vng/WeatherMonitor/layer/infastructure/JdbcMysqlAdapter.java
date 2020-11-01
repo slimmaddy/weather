@@ -2,16 +2,12 @@ package vn.com.vng.WeatherMonitor.layer.infastructure;
 
 import com.mysql.jdbc.Driver;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import vn.com.vng.WeatherMonitor.config.Settings;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Set;
 
 public class JdbcMysqlAdapter {
 
