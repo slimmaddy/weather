@@ -14,7 +14,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
-import org.springframework.stereotype.Component;
 import vn.com.vng.WeatherMonitor.layer.application.model.InvalidDataException;
 import vn.com.vng.WeatherMonitor.layer.application.model.RainViewerParam;
 import vn.com.vng.WeatherMonitor.ultility.Util;
@@ -24,7 +23,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.InputStream;
 
-@Component
 public class RainViewerDao {
     static final int TIMEOUT = 10000;
     static final int RETRY = 2;
@@ -42,6 +40,17 @@ public class RainViewerDao {
 
     private static final String rootPath = "https://tilecache.rainviewer.com/v2/radar/";
 
+    private static volatile RainViewerDao instance;
+
+    public RainViewerDao() {
+    }
+
+    public static synchronized RainViewerDao getInstance() {
+        if (instance == null) {
+            instance = new RainViewerDao();
+        }
+        return instance;
+    }
 
     public byte[] getSnapshot(RainViewerParam param) throws Exception {
         try {

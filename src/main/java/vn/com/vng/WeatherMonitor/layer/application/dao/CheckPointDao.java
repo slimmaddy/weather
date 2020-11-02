@@ -1,12 +1,10 @@
 package vn.com.vng.WeatherMonitor.layer.application.dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import vn.com.vng.WeatherMonitor.config.MyCustomApplicationConfig;
 import vn.com.vng.WeatherMonitor.layer.application.entity.CheckPoint;
 import vn.com.vng.WeatherMonitor.layer.application.model.CheckPointRowMapper;
 
@@ -14,13 +12,23 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 
-@Component
 public class CheckPointDao {
-    @Autowired
-    @Qualifier("mysqlTemplate")
     private JdbcTemplate mysqlTemplate;
 
     public static final String checkpointTable = "checkpoint_tbl";
+
+    private static volatile CheckPointDao instance;
+
+    public CheckPointDao(JdbcTemplate mysqlTemplate) {
+        this.mysqlTemplate = mysqlTemplate;
+    }
+
+    public static synchronized CheckPointDao getInstance() {
+        if (instance == null) {
+            instance = new CheckPointDao(MyCustomApplicationConfig.getInstance().mysqlJdbcTemplate());
+        }
+        return instance;
+    }
 
     public Integer insert(CheckPoint checkPoint) throws Exception {
         int maxRetry = 3;

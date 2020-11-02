@@ -1,10 +1,8 @@
 package vn.com.vng.WeatherMonitor.layer.application.dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import vn.com.vng.WeatherMonitor.config.MyCustomApplicationConfig;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Record;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
 import vn.com.vng.WeatherMonitor.layer.application.model.QueryFilter;
@@ -17,13 +15,23 @@ import java.util.List;
 import static vn.com.vng.WeatherMonitor.layer.application.dao.CheckPointDao.checkpointTable;
 import static vn.com.vng.WeatherMonitor.layer.application.dao.RegionDao.regionTable;
 
-@Component
 public class RecordDao {
-    @Autowired
-    @Qualifier("mysqlTemplate")
     private JdbcTemplate mysqlTemplate;
 
     public static final String recordTable = "record_tbl";
+
+    public RecordDao(JdbcTemplate mysqlTemplate) {
+        this.mysqlTemplate = mysqlTemplate;
+    }
+
+    private static volatile RecordDao instance;
+
+    public static synchronized RecordDao getInstance() {
+        if (instance == null) {
+            instance = new RecordDao(MyCustomApplicationConfig.getInstance().mysqlJdbcTemplate());
+        }
+        return instance;
+    }
 
     public void insert(Record record) throws Exception {
         int maxRetry = 3;

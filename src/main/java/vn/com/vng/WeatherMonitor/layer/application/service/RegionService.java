@@ -1,7 +1,6 @@
 package vn.com.vng.WeatherMonitor.layer.application.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import vn.com.vng.WeatherMonitor.layer.application.dao.RegionDao;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Area;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
@@ -13,10 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Service
 public class RegionService {
-    @Autowired
     RegionDao regionDao;
+
+    public RegionService() {
+        this.regionDao = RegionDao.getInstance();
+    }
 
     public Region insertRegion(Region region) throws Exception {
         RegionValidator.validate(region);

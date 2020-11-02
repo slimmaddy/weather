@@ -1,7 +1,6 @@
 package vn.com.vng.WeatherMonitor.layer.application;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import vn.com.vng.WeatherMonitor.config.MyCustomApplicationConfig;
 import vn.com.vng.WeatherMonitor.layer.application.dao.CheckPointDao;
 import vn.com.vng.WeatherMonitor.layer.application.dao.RainViewerDao;
 import vn.com.vng.WeatherMonitor.layer.application.dao.RecordDao;
@@ -10,35 +9,36 @@ import vn.com.vng.WeatherMonitor.layer.application.entity.CheckPoint;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Record;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
 import vn.com.vng.WeatherMonitor.layer.application.model.RainViewerParam;
-import vn.com.vng.WeatherMonitor.ultility.Util;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
 public class FetchRainDataThread extends Thread{
 
     private ScheduledExecutorService executorService = Executors
             .newSingleThreadScheduledExecutor();
 
-    @Autowired
     RainViewerDao rainViewerDao;
 
-    @Autowired
     CheckPointDao checkPointDao;
 
-    @Autowired
     RegionDao regionDao;
 
-    @Autowired
     ExecutorService executor;
 
-    @Autowired
     RecordDao recordDao;
 
-    @PostConstruct
+    public FetchRainDataThread() throws Exception {
+        this.rainViewerDao = RainViewerDao.getInstance();
+        this.checkPointDao = CheckPointDao.getInstance();
+        this.regionDao = RegionDao.getInstance();
+        this.executor = MyCustomApplicationConfig.getInstance().taskExecutor();
+        this.recordDao = RecordDao.getInstance();
+        init();
+    }
+
     public void init() throws Exception {
         executorService.scheduleWithFixedDelay(() -> {
             try {

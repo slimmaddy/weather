@@ -6,7 +6,7 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import vn.com.vng.WeatherMonitor.config.MyCustomApplicationConfig;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Area;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Region;
 import vn.com.vng.WeatherMonitor.layer.application.model.AreaRowMapper;
@@ -17,14 +17,24 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class RegionDao {
-    @Autowired
-    @Qualifier("mysqlTemplate")
     private JdbcTemplate mysqlTemplate;
 
     public static final String regionTable = "region_tbl";
     public static final String areaTable = "area_tbl";
+
+    public RegionDao(JdbcTemplate mysqlTemplate) {
+        this.mysqlTemplate = mysqlTemplate;
+    }
+
+    private static volatile RegionDao instance;
+
+    public static synchronized RegionDao getInstance() {
+        if (instance == null) {
+            instance = new RegionDao(MyCustomApplicationConfig.getInstance().mysqlJdbcTemplate());
+        }
+        return instance;
+    }
 
     public Integer insert(Region region) throws Exception {
         int maxRetry = 3;

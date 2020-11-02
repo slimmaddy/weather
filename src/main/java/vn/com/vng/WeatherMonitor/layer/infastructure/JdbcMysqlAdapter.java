@@ -3,13 +3,20 @@ package vn.com.vng.WeatherMonitor.layer.infastructure;
 import com.mysql.jdbc.Driver;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import vn.com.vng.WeatherMonitor.config.Settings;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
 
 public class JdbcMysqlAdapter {
+    private static volatile JdbcMysqlAdapter instance;
+
+    public static synchronized JdbcMysqlAdapter getInstance() {
+        if (instance == null) {
+            instance = new JdbcMysqlAdapter();
+        }
+        return instance;
+    }
 
     private DataSource dataSource;
 

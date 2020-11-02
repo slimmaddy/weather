@@ -1,8 +1,6 @@
 package vn.com.vng.WeatherMonitor.layer.application.web.sparkAPI;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import spark.Request;
 import spark.RouteGroup;
 import vn.com.vng.WeatherMonitor.config.Settings;
@@ -15,11 +13,13 @@ import java.util.List;
 
 import static spark.Spark.*;
 
-@Component
 public class RegionController implements RouteGroup {
 
-    @Autowired
     RegionService regionService;
+
+    public RegionController() {
+        this.regionService = new RegionService();
+    }
 
     public Object listRegions(Request req, spark.Response res) {
         try {

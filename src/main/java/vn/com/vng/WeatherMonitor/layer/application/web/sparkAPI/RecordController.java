@@ -1,8 +1,6 @@
 package vn.com.vng.WeatherMonitor.layer.application.web.sparkAPI;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import spark.*;
 import vn.com.vng.WeatherMonitor.config.Settings;
 import vn.com.vng.WeatherMonitor.layer.application.model.InvalidDataException;
@@ -16,11 +14,13 @@ import java.util.List;
 import static spark.Spark.after;
 import static spark.Spark.get;
 
-@Component
 public class RecordController implements RouteGroup {
 
-    @Autowired
     RecordService recordService;
+
+    public RecordController() {
+        recordService = new RecordService();
+    }
 
     public Object listRecords(Request req, spark.Response res) {
         try {

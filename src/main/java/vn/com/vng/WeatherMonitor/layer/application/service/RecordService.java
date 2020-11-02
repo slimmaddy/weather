@@ -2,8 +2,7 @@ package vn.com.vng.WeatherMonitor.layer.application.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import vn.com.vng.WeatherMonitor.config.MyCustomApplicationConfig;
 import vn.com.vng.WeatherMonitor.layer.application.dao.RecordDao;
 import vn.com.vng.WeatherMonitor.layer.application.dao.RegionDao;
 import vn.com.vng.WeatherMonitor.layer.application.entity.Area;
@@ -24,18 +23,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-@Service
 public class RecordService {
-    @Autowired
     RecordDao recordDao;
 
-    @Autowired
     RegionDao regionDao;
 
-    @Autowired
     ExecutorService executor;
 
-    public List<RecordRespondPayload> listRecord(QuerySearch filter) throws InvalidDataException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InterruptedException, ExecutionException, JsonProcessingException {
+    public RecordService() {
+        this.recordDao = RecordDao.getInstance();
+        this.regionDao = RegionDao.getInstance();
+        this.executor = MyCustomApplicationConfig.getInstance().taskExecutor();
+    }
+
+    public List<RecordRespondPayload> listRecord(QuerySearch filter) throws InvalidDataException, InterruptedException, ExecutionException {
         QuerySearchValidator.validate(filter);
         //region
         if(filter.getRegionCode() != null) {
